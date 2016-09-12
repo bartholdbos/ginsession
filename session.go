@@ -20,17 +20,17 @@ type Session interface {
 }
 
 type Provider interface {
-	AddSession(ID string) (Session, err) //Create a new session with ID
-	GetSession(ID string) (Session, err) //Get session by ID
-	DelSession(ID string) err            //Delete session by ID
-	ClearSessions(lifetime int64)        //Clear inactive sessions
+	AddSession(ID string) (Session, error) //Create a new session with ID
+	GetSession(ID string) (Session, error) //Get session by ID
+	DelSession(ID string) error            //Delete session by ID
+	ClearSessions(lifetime int64)          //Clear inactive sessions
 }
 
 //Create a new Manager
 func CreateManager(name string, lifetime int64, providername string) (*Manager, error) {
 	provider, ok := providers[providername]
 	if ok {
-		return &Manager{name: name, lifetime: lifetime, provider: providername}, nil
+		return &Manager{name: name, lifetime: lifetime, provider: provider}, nil
 	} else {
 		return nil, errors.New("Unknown Provider")
 	}

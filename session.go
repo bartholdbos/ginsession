@@ -38,7 +38,7 @@ func CreateManager(name string, lifetime int64, providername string) (*Manager, 
 	if ok {
 		return &Manager{name: name, lifetime: lifetime, provider: provider}, nil
 	} else {
-		return nil, errors.New("Unknown Provider")
+		return nil, errors.New("session.CreateManager: Provider Unknown")
 	}
 }
 

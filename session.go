@@ -75,3 +75,22 @@ func (manager *Manager) SessionInit(c *gin.Context) (session Session, err error)
 
 	return
 }
+
+func (manager *Manager) SessionDestroy(c *gin.Context) (err error) {
+	var ID string
+
+	cookie, err1 := c.Cookie(manager.name)
+	if err1 != nil || cookie == "" {
+		return
+	} else {
+		ID, err = url.QueryUnescape(cookie)
+		if err != nil {
+			return
+		}
+
+		manager.provider.DelSession(ID)
+		c.SetCookie(manager.name, "", -1, "/", "", false, true)
+	}
+
+	return
+}

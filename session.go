@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/url"
+	"time"
 )
 
 var providers = make(map[string]Provider)
@@ -93,6 +94,11 @@ func (manager *Manager) SessionDestroy(c *gin.Context) (err error) {
 	}
 
 	return
+}
+
+func (manager *Manager) SessionClear() {
+	manager.provider.ClearSessions(manager.lifetime)
+	time.AfterFunc(time.Duration(manager.lifetime), func() { manager.SessionClear() })
 }
 
 func Register(name string, provider Provider) error {

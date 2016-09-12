@@ -1,7 +1,12 @@
 package ginsession
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"errors"
+	"github.com/gin-gonic/gin"
+	"io"
+	"net/url"
 )
 
 var providers = make(map[string]Provider)
@@ -34,4 +39,39 @@ func CreateManager(name string, lifetime int64, providername string) (*Manager, 
 	} else {
 		return nil, errors.New("Unknown Provider")
 	}
+}
+
+func generateID() (string, error) {
+	b := make([]byte, 32)
+
+	_, err := io.ReadFull(rand.Reader, b)
+	if err != nil {
+		return "", err
+	}
+
+	return base64.URLEncoding.EncodeToString(b), nil
+}
+
+func (manager *Manager) SessionInit(c *gin.Context) (session Session, err error) {
+	var ID string
+
+	cookie, err1 := c.Cookie(manager.name)
+	if err1 != nil || cookie == "" {
+		ID, err = generateID()
+		if err != nil {
+			return
+		}
+
+		session, err = manager.provider.AddSession(ID)
+		c.SetCookie(manager.name, url.QueryEscape(ID), int(manager.lifetime), "/", "", false, true)
+	} else {
+		ID, err = url.QueryUnescape(cookie)
+		if err != nil {
+			return
+		}
+
+		session, err = manager.provider.GetSession(ID)
+	}
+
+	return
 }

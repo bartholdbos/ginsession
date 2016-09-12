@@ -94,3 +94,17 @@ func (manager *Manager) SessionDestroy(c *gin.Context) (err error) {
 
 	return
 }
+
+func Register(name string, provider Provider) error {
+	if provider != nil {
+		return errors.New("session.Register: Provider is nil")
+	}
+
+	if _, dup := providers[name]; dup {
+		return errors.New("session.Register: Provider already registered")
+	}
+
+	providers[name] = provider
+
+	return nil
+}

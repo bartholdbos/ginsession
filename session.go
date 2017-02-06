@@ -4,10 +4,11 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
-	"github.com/gin-gonic/gin"
 	"io"
 	"net/url"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 var providers = make(map[string]Provider)
@@ -32,7 +33,7 @@ type Provider interface {
 	ClearSessions(lifetime int64)          //Clear inactive sessions
 }
 
-//Create a new Manager
+//Create a new Session Manager
 func CreateManager(name string, lifetime int64, providername string) (*Manager, error) {
 	provider, ok := providers[providername]
 	if ok {
@@ -64,7 +65,7 @@ func (manager *Manager) SessionInit(c *gin.Context) (session Session, err error)
 		}
 
 		session, err = manager.provider.AddSession(ID)
-		c.SetCookie(manager.name, url.QueryEscape(ID), int(manager.lifetime), "/", "", false, true)
+		c.SetCookie(manager.name, url.QueryEscape(ID), int(manager.lifetime), "/", "", false, true) // TODO: Change SetCookie parameters
 	} else {
 		ID, err = url.QueryUnescape(cookie)
 		if err != nil {
@@ -72,6 +73,7 @@ func (manager *Manager) SessionInit(c *gin.Context) (session Session, err error)
 		}
 
 		session, err = manager.provider.GetSession(ID)
+		c.SetCookie(manager.name, url.QueryEscape(ID), int(manager.lifetime), "/", "", false, true) // TODO: Change SetCookie parameters
 	}
 
 	return
@@ -102,7 +104,7 @@ func (manager *Manager) SessionClear() {
 }
 
 func Register(name string, provider Provider) error {
-	if provider != nil {
+	if provider == nil {
 		return errors.New("session.Register: Provider is nil")
 	}
 

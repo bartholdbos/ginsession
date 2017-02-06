@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"io"
+	"log"
 	"net/url"
 	"time"
 
@@ -52,6 +53,22 @@ func generateID() (string, error) {
 	}
 
 	return base64.URLEncoding.EncodeToString(b), nil
+}
+
+func (manager *Manager) SessionStart() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		session, err := manager.SessionInit(c)
+		if err != nil {
+			c.AbortWithStatus(500) // TODO: better error handling
+			log.Fatalf("%s\n", err)
+		} else {
+			c.Set(manager.name, session)
+		}
+	}
+}
+
+func (manager *Manager) SessionReturn(c *gin.Context) Session {
+	return c.MustGet(manager.name).(Session)
 }
 
 func (manager *Manager) SessionInit(c *gin.Context) (session Session, err error) {
